@@ -68,46 +68,59 @@ class PostService {
     }
   };
 
-  static create = async (params) => {
+  static create = async (params, filePath) => {
     try {
-      const post = await Post.create(params, {
+      const data = {
+        ...params,
+        img_url: filePath
+      };
+
+      const post = await Post.create(data, {
         returning: true
       });
+
       return post;
     } catch (err) {
+      console.log(err);
       throw err;
     }
   };
 
   static update = async (params) => {
     try {
-      const { id, body } = params;
-      const userId = params.body.userId;
+      const { id, body, filePath } = params;
 
       const post = await Post.findOne({
         where: {
           id,
-          userId
         }
       });
 
       if (!post) throw { name: 'ErrorNotFound', message: 'Post not found' };
 
-      const updatedPost = await post.update(body);
+      const data = {
+        ...body,
+      };
+
+      if (filePath) {
+        data.img_url = filePath;
+      }
+
+      const updatedPost = await post.update(data);
       return updatedPost;
     } catch (err) {
       throw err;
     }
   };
 
-  static destroy = async (id, userId) => {
+  static destroy = async (id) => {
     try {
       const filterOptions = {
         where: {
           id,
-          userId
         }
       };
+
       const post = await Post.findOne(filterOptions);
 
       if (!post) throw { name: 'ErrorNotFound', message: 'Post not found' };
